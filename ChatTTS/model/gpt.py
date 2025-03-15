@@ -56,7 +56,7 @@ class GPT(nn.Module):
         self.head_text = embed.head_text.__call__
         self.head_code = [hc.__call__ for hc in embed.head_code]
 
-    def from_pretrained(
+    def load_pretrained(
         self, gpt_folder: str, embed_file_path: str, experimental=False
     ):
         if self.is_vllm and platform.system().lower() == "linux":
@@ -187,7 +187,12 @@ class GPT(nn.Module):
                     if cache_position is not None
                     else past_key_values.get_seq_length()
                 )
-                max_cache_length = past_key_values.get_max_length()
+                try:
+                    max_cache_length = past_key_values.get_max_cache_shape()
+                except:
+                    max_cache_length = (
+                        past_key_values.get_max_length()
+                    )  # deprecated in transformers 4.48
                 cache_length = (
                     past_length
                     if max_cache_length is None
